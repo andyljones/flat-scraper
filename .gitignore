@@ -1,3 +1,5 @@
 resources/
 photos/
 *.pyc
+*.css
+*.html

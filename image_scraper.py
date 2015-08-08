@@ -17,7 +17,7 @@ def get_photo_urls(listing_url):
 def save_photo(photo_url, filename):
     photo_string = requests.get(photo_url).content
     photo = Image.open(StringIO(photo_string))
-    photo.save(os.path.join('photos', filename))
+    photo.save(os.path.join('resources/photos', filename))
 
 def save_photos(listing_url, listing_id):
     photo_urls = get_photo_urls(listing_url)
