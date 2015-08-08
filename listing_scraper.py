@@ -7,7 +7,7 @@ import time
 from image_scraper import save_photos
 
 WEEKS_PER_MONTH = 365/12./7
-1550/WEEKS_PER_MONTH
+
 FIELDS_TO_STORE = [
     'listing_id',
     'status',
