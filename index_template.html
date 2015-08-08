@@ -5,14 +5,19 @@
   </head>
   <body>
     {% for listing in listings %}
-    <span>
-      <p>{{listing['station_name']}}, &pound{{listing['price']}}</p>
+    <div id="listing">
+      <ul>
+        <li>{{listing['station_name']}}</li>
+        <li>&pound{{listing['price']}}</li>
+        <li>Last updated: {{listing['last_published_date']}}</li>
+        <li><a href="{{listing['details_url']}}">Details</a>
+      </ul>
       <div id="photos">
       {% for filename in listing['photo_filenames'] %}
         <img src="photos/{{filename}}">
       {% endfor %}
       </div>
-    </span>
+    </div>
     {% endfor %}
   </body>
 </html>
