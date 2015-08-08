@@ -9,7 +9,7 @@ def update_website():
 
     try:
         print('Generating index.html...')
-        repo.heads['feat/github-pages'].checkout()
+        repo.heads['master'].checkout()
         generate_index()
 
         print('Adding to branch gh-pages...')
