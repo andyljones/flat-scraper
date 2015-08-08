@@ -1,0 +1,4 @@
+#photos {
+  overflow-x: scroll;
+  white-space:nowrap
+}

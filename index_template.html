@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <link rel="stylesheet" type="text/css" href="index.css">
+  </head>
+  <body>
+    {% for listing in listings %}
+    <span>
+      <p>{{listing['station_name']}}, &pound{{listing['price']}}</p>
+      <div id="photos">
+      {% for filename in listing['photo_filenames'] %}
+        <img src="photos/{{filename}}">
+      {% endfor %}
+      </div>
+    </span>
+    {% endfor %}
+  </body>
+</html>
