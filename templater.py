@@ -21,5 +21,6 @@ def get_rendered_page():
     rendered = template.render(listings=get_listings())
     return rendered
 
-with open('index.html', 'w+') as f:
-    f.write(get_rendered_page())
+def generate_index():
+    with open('index.html', 'w+') as f:
+        f.write(get_rendered_page())
