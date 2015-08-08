@@ -21,6 +21,10 @@ def save_photo(photo_url, filename):
 
 def save_photos(listing_url, listing_id):
     photo_urls = get_photo_urls(listing_url)
+    filenames = []
     for i, url in enumerate(photo_urls):
         filename = str.format('{}_{}.jpg', listing_id, i)
+        filenames.append(filename)
         save_photo(url, filename)
+
+    return filenames
