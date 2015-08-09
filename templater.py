@@ -43,11 +43,14 @@ def should_be_included(listing):
     if listing['photo_filenames'] and is_available_in_sept(listing):
         return True
 
-def get_commutes(station_name):
+def get_commutes(station_names):
     commutes = json.load(open('resources/commute_lengths.json', 'r'))
+    euston_commutes = commutes['Euston Underground Station']
+    green_park_commutes = commutes['Green Park Underground Station']
+
     return {
-        'Euston': int(commutes['Euston Underground Station'][station_name + ' Underground Station']),
-        'Green Park': int(commutes['Green Park Underground Station'][station_name + ' Underground Station'])
+        'Euston': min(int(euston_commutes[name + ' Underground Station']) for name in station_names),
+        'Green Park': min(int(green_park_commutes[name + ' Underground Station']) for name in station_names)
         }
 
 def get_listings():
@@ -62,6 +65,8 @@ def get_listings():
             results.append(listing)
 
     for listing in results:
+        listing['printable_station_names'] = ', '.join(listing['station_name'])
+        listing['printable_availabilities'] = str.format('"{}"', '" or "'.join(listing['availabilities'])) 
         listing['price_color'] = get_color(listing, results, lambda l: int(l['price']), plt.cm.YlOrRd)
         listing['euston_color'] = get_color(listing, results, lambda l: l['commutes']['Euston'], plt.cm.GnBu)
         listing['green_park_color'] = get_color(listing, results, lambda l: l['commutes']['Green Park'], plt.cm.GnBu)
