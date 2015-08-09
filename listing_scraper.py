@@ -2,6 +2,7 @@ import zoopla
 import json
 import os
 import sys
+import datetime
 import time
 import requests
 
@@ -21,12 +22,12 @@ FIELDS_TO_STORE = [
     'agent_name',
     'agent_phone']
 
-REQUEST_DELAY = 5#seconds
+REQUEST_DELAY = 1#seconds
 STORE_PATH = 'resources/listings.json'
 
 def get_api():
     key = json.load(open('resources/zoopla_key.json', 'r'))
-    return zoopla.api(version=1, api_key=key, cache_seconds=0)
+    return zoopla.api(version=1, api_key=key)
 
 def get_coords(station_name):
     coords = json.load(open('resources/station_coords.json', 'r'))
@@ -71,8 +72,6 @@ def scrape_listings():
     for station_name, station_params in params.iteritems():
         yield (station_name, list(api.property_listings(**station_params)))
 
-    return results
-
 def scrape_property_info(page_text):
     bs = BeautifulSoup(page_text, 'html.parser')
     tag = bs.find('h3', text='Property info').find_next_sibling('ul')
@@ -81,35 +80,55 @@ def scrape_property_info(page_text):
     else:
         return ''
 
-def store_listing(station_name, listing):
+def create_storable_listing(station_name, start_time, listing):
+    page_text = requests.get(listing.details_url).text
+
+    return dict(
+        {field: getattr(listing, field) for field in FIELDS_TO_STORE},
+        station_name=[station_name],
+        photo_filenames=save_photos(page_text, listing.listing_id),
+        property_info=scrape_property_info(page_text),
+        store_times=[str(start_time)]
+    )
+
+def update_storable_listing(station_name, start_time, stored_listing, listing):
+    storable_listing = create_storable_listing(station_name, start_time, listing)
+    storable_listing['store_times'] += stored_listing['time']
+    storable_listing['station_name'] += stored_listing['station_name']
+
+    return storable_listing
+
+def store_listing(station_name, start_time, listing):
     if not os.path.exists(STORE_PATH):
         json.dump({}, open(STORE_PATH, 'w'))
 
     store = json.load(open(STORE_PATH, 'r'))
-
     listing_id = listing.listing_id
-    if (listing_id not in store) or (listing.last_published_date < store[listing_id]['last_published_date']):
+    stored_listing = store.get(listing_id)
+
+    if not stored_listing:
         print(str.format('Storing listing #{}', listing_id))
-        page_text = requests.get(listing.details_url).text
-
-        storable_listing = {field: getattr(listing, field) for field in FIELDS_TO_STORE}
-        storable_listing['station_name'] = station_name
-        storable_listing['photo_filenames'] = save_photos(page_text, listing_id)
-        storable_listing['property_info'] = scrape_property_info(page_text)
-
-        store[listing_id] = storable_listing
-
+        stored_listing = create_storable_listing(station_name, start_time, listing)
+        time.sleep(REQUEST_DELAY)
+    elif (listing.last_published_date < store[listing_id]['last_published_date']):
+        print(str.format('Updating listing #{}', listing_id))
+        stored_listing = update_storable_listing(station_name, start_time, stored_listing, listing)
         time.sleep(REQUEST_DELAY)
     else:
         print(str.format('Listing #{} has not been updated since last time it was stored', listing_id))
 
+    if (station_name not in stored_listing['station_name']):
+        stored_listing['station_name'] = list(set(stored_listing['station_name']).union([station_name]))
+
+    store[listing_id] = stored_listing
     json.dump(store, open(STORE_PATH, 'r+'))
 
 def scrape_listings_and_images():
-    for i, (station_name, listings) in scrape_listings():
-        print(str.format('{} listings to store for station {} of {}, {}', len(listings), i+1, len(all_listings), station_name))
+    time =  datetime.datetime.now()
+    for i, (station_name, listings) in enumerate(scrape_listings()):
+        print(str.format('{} listings to store for station {}, {}', len(listings), i+1, station_name))
         for listing in listings:
-            store_listing(station_name, listing)
+            store_listing(station_name, time, listing)
 
-# sys.stdout = os.fdopen(sys.stdout.fileno(), 'w', 1)
-# scrape_listings_and_images()
+sys.stdout = os.fdopen(sys.stdout.fileno(), 'w', 1)
+scrape_listings_and_images()
