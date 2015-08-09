@@ -6,6 +6,7 @@ import matplotlib as mpl
 import re
 import humanhash
 from jinja2 import Environment, FileSystemLoader
+from itertools import chain
 
 WEEKS_PER_MONTH = 365/12./7
 
@@ -28,20 +29,26 @@ def get_color(listing, listings, f, cm):
 
     return background_color, text_color
 
+def add_colors(listings):
+    for listing in listings:
+        listing.update(
+            price_color=get_color(listing, listings, lambda l: int(l['price']), plt.cm.YlOrRd),
+            euston_color=get_color(listing, listings, lambda l: l['commutes']['Euston'], plt.cm.GnBu),
+            green_park_color=get_color(listing, listings, lambda l: l['commutes']['Green Park'], plt.cm.GnBu)
+        )
+
 def get_availabilities(listing):
     from_text = re.findall(AVAILABILITY_REGEX, listing['description'], flags=re.IGNORECASE)
     from_property_info = re.findall(AVAILABILITY_REGEX, listing['property_info'], flags=re.IGNORECASE)
-
     return from_text + from_property_info
 
 def is_available_in_sept(listing):
     availabilities = get_availabilities(listing)
-    if any(re.findall('sep|\.09\.|\.9\.|/09/|/9/', a, flags=re.IGNORECASE) for a in availabilities):
-        return True
+    matches = (re.findall('sep|\.09\.|\.9\.|/09/|/9/', a, flags=re.IGNORECASE) for a in availabilities)
+    return True if any(matches) else False
 
 def should_be_included(listing):
-    if listing['photo_filenames'] and is_available_in_sept(listing):
-        return True
+    return True if listing['photo_filenames'] and is_available_in_sept(listing) else False
 
 def get_commutes(station_names):
     commutes = json.load(open('resources/commute_lengths.json', 'r'))
@@ -53,27 +60,28 @@ def get_commutes(station_names):
         'Green Park': min(int(green_park_commutes[name + ' Underground Station']) for name in station_names)
         }
 
+def has_expired(listing, listings):
+    latest_store_time = max(chain(l['store_times'] for l in listings))
+    return True if max(listing['store_times']) < latest_store_time else False
+
 def get_listings():
     listings = json.load(open('resources/listings.json', 'r')).values()
-    results = []
-    for listing in listings:
-        if should_be_included(listing):
-            listing['monthly_price'] = int(WEEKS_PER_MONTH*int(listing['price']))
-            listing['availabilities'] = get_availabilities(listing)
-            listing['commutes'] = get_commutes(listing['station_name'])
-            listing['hashname'] = humanhash.humanize(listing['listing_id'], words=2)
-            results.append(listing)
+    included_listings = [l for l in listings if should_be_included(l)]
 
-    for listing in results:
-        listing['printable_station_names'] = ', '.join(listing['station_name'])
-        listing['printable_availabilities'] = str.format('"{}"', '" or "'.join(listing['availabilities']))
-        listing['price_color'] = get_color(listing, results, lambda l: int(l['price']), plt.cm.YlOrRd)
-        listing['euston_color'] = get_color(listing, results, lambda l: l['commutes']['Euston'], plt.cm.GnBu)
-        listing['green_park_color'] = get_color(listing, results, lambda l: l['commutes']['Green Park'], plt.cm.GnBu)
+    for listing in included_listings:
+        listing.update(
+            monthly_price=int(WEEKS_PER_MONTH*int(listing['price'])),
+            availabilities=get_availabilities(listing),
+            commutes=get_commutes(listing['station_name']),
+            hashname=humanhash.humanize(listing['listing_id'], words=2),
+            expired=has_expired(listing, listings),
+            printable_station_names=', '.join(listing['station_name']),
+            printable_availabilities=str.format('"{}"', '" or "'.join(get_availabilities(listing)))
+        )
 
-    results = sorted(results, key=lambda r: r['last_published_date'], reverse=True)
+    add_colors(included_listings)
 
-    return results
+    return sorted(included_listings, key=lambda r: r['last_published_date'], reverse=True)
 
 def get_rendered_page():
     env = Environment(loader=FileSystemLoader('.'))
