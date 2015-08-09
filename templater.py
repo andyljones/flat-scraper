@@ -11,8 +11,8 @@ def get_listing_color(listing, listings):
     price = int(listing['price'])
     prices = [int(l['price']) for l in listings]
 
-    lower = sp.percentile(prices, 0)
-    upper = sp.percentile(prices, 100)
+    lower = sp.percentile(prices, 10)
+    upper = sp.percentile(prices, 90)
 
     relative_price = (price - lower)/(upper - lower)
     color = plt.cm.OrRd(relative_price)
