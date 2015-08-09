@@ -83,7 +83,7 @@ def store_listing(station_name, listing):
         storable_listing['station_name'] = station_name
         storable_listing['photo_filenames'] = save_photos(listing.details_url, listing_id)
 
-        store[listing] = storable_listing
+        store[listing_id] = storable_listing
 
         time.sleep(REQUEST_DELAY)
     else:
@@ -98,6 +98,3 @@ def scrape_listings_and_images():
         print(str.format('{} listings to store for station {}', len(listings), station_name))
         for listing in listings:
             store_listing(station_name, listing)
-
-sys.stdout = os.fdopen(sys.stdout.fileno(), 'w', 1)
-scrape_listings_and_images()
