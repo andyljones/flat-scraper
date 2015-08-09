@@ -38,6 +38,10 @@
   width: 98%
 }
 
+.expired {
+  opacity: 0.3
+}
+
 body {
   background-color: rgb(230, 230, 230);
   font-family: sans-serif;
