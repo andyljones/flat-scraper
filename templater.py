@@ -19,8 +19,6 @@ def get_listing_color(listing, listings):
 
     return tuple([int(255*c) for c in color])
 
-plt.colors.ColorConverter('.8')
-
 def get_listings():
     listings = json.load(open('resources/listings.json', 'r'))
     results = []
@@ -43,5 +41,3 @@ def get_rendered_page():
 def generate_index():
     with open('index.html', 'w+') as f:
         f.write(get_rendered_page())
-
-generate_index()
