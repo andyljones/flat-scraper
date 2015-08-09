@@ -11,17 +11,21 @@ WEEKS_PER_MONTH = 365/12./7
 DATE_REGEX = '(?:aug|august|sep|sept|september|oct|october|now|immediately|\d+/\d+|\d+.\d+)'
 AVAILABILITY_REGEX = 'available.{,20}' + DATE_REGEX
 
-def get_price_color(listing, listings):
-    price = int(listing['price'])
-    prices = [int(l['price']) for l in listings]
+def get_color(listing, listings, f, cm):
+    price = f(listing)
+    prices = [f(l) for l in listings]
 
     lower = sp.percentile(prices, 10)
     upper = sp.percentile(prices, 90)
 
     relative_price = (price - lower)/(upper - lower)
-    color = plt.cm.YlOrRd(sp.clip(relative_price, 0, 1))
+    color = cm(sp.clip(relative_price, 0, 1))
 
-    return tuple([int(255*c) for c in color])
+    is_dark = sum(color[:3])/4 < 0.4
+    background_color = tuple([int(255*c) for c in color[:3]])
+    text_color = (230, 230, 230) if is_dark else (50, 50, 50)
+
+    return background_color, text_color
 
 def get_availabilities(listing):
     from_text = re.findall(AVAILABILITY_REGEX, listing['description'], flags=re.IGNORECASE)
@@ -41,20 +45,24 @@ def should_be_included(listing):
 def get_commutes(station_name):
     commutes = json.load(open('resources/commute_lengths.json', 'r'))
     return {
-        'Euston': commutes['Euston Underground Station'][station_name + ' Underground Station'],
-        'Green Park': commutes['Green Park Underground Station'][station_name + ' Underground Station']
+        'Euston': int(commutes['Euston Underground Station'][station_name + ' Underground Station']),
+        'Green Park': int(commutes['Green Park Underground Station'][station_name + ' Underground Station'])
         }
 
 def get_listings():
-    listings = json.load(open('resources/listings.json', 'r'))
+    listings = json.load(open('resources/listings.json', 'r')).values()
     results = []
-    for listing in listings.values():
+    for listing in listings:
         if should_be_included(listing):
             listing['monthly_price'] = int(WEEKS_PER_MONTH*int(listing['price']))
-            listing['price_color'] = get_price_color(listing, listings.values())
             listing['availabilities'] = get_availabilities(listing)
             listing['commutes'] = get_commutes(listing['station_name'])
             results.append(listing)
+
+    for listing in results:
+        listing['price_color'] = get_color(listing, results, lambda l: int(l['price']), plt.cm.YlOrRd)
+        listing['euston_color'] = get_color(listing, results, lambda l: l['commutes']['Euston'], plt.cm.GnBu)
+        listing['green_park_color'] = get_color(listing, results, lambda l: l['commutes']['Green Park'], plt.cm.GnBu)
 
     results = sorted(results, key=lambda r: r['last_published_date'], reverse=True)
 

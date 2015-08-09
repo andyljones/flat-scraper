@@ -5,12 +5,19 @@
   </head>
   <body>
     {% for listing in listings %}
-    <div id="listing" style="border-color:rgba{{listing['price_color']}}">
-      <ul>
+    <div id="listing">
+      <div class="value-displays" style="background-color:rgb{{listing['price_color'][0]}};color:rgb{{listing['price_color'][1]}}">
+        Price<br>&pound{{listing['monthly_price']}}pcm
+      </div>
+      <div class="value-displays" style="background-color:rgb{{listing['euston_color'][0]}};color:rgb{{listing['euston_color'][1]}}">
+        Euston<br>{{listing['commutes']['Euston']}} mins
+      </div>
+      <div class="value-displays" style="background-color:rgb{{listing['green_park_color'][0]}};color:rgb{{listing['green_park_color'][1]}}">
+        Green Park<br>{{listing['commutes']['Green Park']}} mins
+      </div>
+      <ul id="details">
         <li>{{listing['station_name']}}</li>
-        <li>&pound{{listing['monthly_price']}}</li>
-        <li>{{listing['commutes']['Euston']}} mins to Euston, {{listing['commutes']['Green Park']}} mins to Green Park</li>
-        <li>Availability: {{listing['availabilities']}}</li>
+        <li>{{listing['availabilities']}}</li>
         <li>Last updated: {{listing['last_published_date']}}</li>
         <li><a href="{{listing['details_url']}}">Details</a>
       </ul>
