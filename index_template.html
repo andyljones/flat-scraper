@@ -5,10 +5,11 @@
   </head>
   <body>
     {% for listing in listings %}
-    <div id="listing" style="border-color:rgba{{listing['color']}}">
+    <div id="listing" style="border-color:rgba{{listing['price_color']}}">
       <ul>
         <li>{{listing['station_name']}}</li>
         <li>&pound{{listing['monthly_price']}}</li>
+        <li>{{listing['commutes']['Euston']}} mins to Euston, {{listing['commutes']['Green Park']}} mins to Green Park</li>
         <li>Availability: {{listing['availabilities']}}</li>
         <li>Last updated: {{listing['last_published_date']}}</li>
         <li><a href="{{listing['details_url']}}">Details</a>

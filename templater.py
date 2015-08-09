@@ -11,7 +11,7 @@ WEEKS_PER_MONTH = 365/12./7
 DATE_REGEX = '(?:aug|august|sep|sept|september|oct|october|now|immediately|\d+/\d+|\d+.\d+)'
 AVAILABILITY_REGEX = 'available.{,20}' + DATE_REGEX
 
-def get_listing_color(listing, listings):
+def get_price_color(listing, listings):
     price = int(listing['price'])
     prices = [int(l['price']) for l in listings]
 
@@ -38,14 +38,22 @@ def should_be_included(listing):
     if listing['photo_filenames'] and is_available_in_sept(listing):
         return True
 
+def get_commutes(station_name):
+    commutes = json.load(open('resources/commute_lengths.json', 'r'))
+    return {
+        'Euston': commutes['Euston Underground Station'][station_name + ' Underground Station'],
+        'Green Park': commutes['Green Park Underground Station'][station_name + ' Underground Station']
+        }
+
 def get_listings():
     listings = json.load(open('resources/listings.json', 'r'))
     results = []
     for listing in listings.values():
         if should_be_included(listing):
             listing['monthly_price'] = int(WEEKS_PER_MONTH*int(listing['price']))
-            listing['color'] = get_listing_color(listing, listings.values())
+            listing['price_color'] = get_price_color(listing, listings.values())
             listing['availabilities'] = get_availabilities(listing)
+            listing['commutes'] = get_commutes(listing['station_name'])
             results.append(listing)
 
     results = sorted(results, key=lambda r: r['last_published_date'], reverse=True)
@@ -62,4 +70,4 @@ def generate_index():
     with open('index.html', 'w+') as f:
         f.write(get_rendered_page())
 
-# generate_index()
+generate_index()
