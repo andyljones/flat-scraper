@@ -2,3 +2,4 @@ resources/
 photos/
 *.pyc
 index.html
+*.sqlite
