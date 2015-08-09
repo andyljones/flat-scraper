@@ -7,8 +7,7 @@ from PIL import Image
 TEST_URL = 'http://www.zoopla.co.uk/to-rent/details/37701239'
 TEST_PHOTO_URL = 'http://li.zoocdn.com/234544bd101eab23ede830a9a238d1afede05c1a_645_430.jpg'
 
-def get_photo_urls(listing_url):
-    page_text = requests.get(listing_url).text
+def get_photo_urls(page_text):
     bs = BeautifulSoup(page_text, 'html.parser')
     thumbnail_tags = bs.find_all(class_="images-thumb")
     photo_urls = [tag.attrs['data-photo'] for tag in thumbnail_tags]
@@ -23,8 +22,8 @@ def save_photo(photo_url, filename):
 
     photo.save(os.path.join('photos', filename))
 
-def save_photos(listing_url, listing_id):
-    photo_urls = get_photo_urls(listing_url)
+def save_photos(page_text, listing_id):
+    photo_urls = get_photo_urls(page_text)
     filenames = []
     for i, url in enumerate(photo_urls):
         filename = str.format('{}_{}.jpg', listing_id, i)

@@ -3,8 +3,10 @@ import json
 import os
 import sys
 import time
+import requests
 
 from image_scraper import save_photos
+from bs4 import BeautifulSoup
 
 WEEKS_PER_MONTH = 365/12./7
 
@@ -41,7 +43,8 @@ def get_search_params():
         order_by='age',
         listing_status='rent',
         minimum_price=0,
-        furnished='furnished')
+        furnished='furnished',
+        description_style=1)
 
     options = json.load(open('resources/search_options.json', 'r'))
     params['radius'] = options['radius']
@@ -66,9 +69,17 @@ def scrape_listings():
 
     results = {}
     for station_name, station_params in params.iteritems():
-        results[station_name] = list(api.property_listings(**station_params))
+        yield (station_name, list(api.property_listings(**station_params)))
 
     return results
+
+def scrape_property_info(page_text):
+    bs = BeautifulSoup(page_text, 'html.parser')
+    tag = bs.find('h3', text='Property info').find_next_sibling('ul')
+    if tag:
+        return tag.encode_contents()
+    else:
+        return ''
 
 def store_listing(station_name, listing):
     if not os.path.exists(STORE_PATH):
@@ -79,22 +90,26 @@ def store_listing(station_name, listing):
     listing_id = listing.listing_id
     if (listing_id not in store) or (listing.last_published_date < store[listing_id]['last_published_date']):
         print(str.format('Storing listing #{}', listing_id))
+        page_text = requests.get(listing.details_url).text
+
         storable_listing = {field: getattr(listing, field) for field in FIELDS_TO_STORE}
         storable_listing['station_name'] = station_name
-        storable_listing['photo_filenames'] = save_photos(listing.details_url, listing_id)
+        storable_listing['photo_filenames'] = save_photos(page_text, listing_id)
+        storable_listing['property_info'] = scrape_property_info(page_text)
 
         store[listing_id] = storable_listing
 
         time.sleep(REQUEST_DELAY)
     else:
-        print(str.format('Listing #{} has already been stored and has not been updated', listing_id))
+        print(str.format('Listing #{} has not been updated since last time it was stored', listing_id))
 
     json.dump(store, open(STORE_PATH, 'r+'))
 
 def scrape_listings_and_images():
-    all_listings = scrape_listings()
-
-    for station_name, listings in all_listings.iteritems():
-        print(str.format('{} listings to store for station {}', len(listings), station_name))
+    for i, (station_name, listings) in scrape_listings():
+        print(str.format('{} listings to store for station {} of {}, {}', len(listings), i+1, len(all_listings), station_name))
         for listing in listings:
             store_listing(station_name, listing)
+
+# sys.stdout = os.fdopen(sys.stdout.fileno(), 'w', 1)
+# scrape_listings_and_images()
