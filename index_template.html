@@ -5,7 +5,7 @@
   </head>
   <body>
     {% for listing in listings %}
-    <div id="listing">
+    <div id="listing" class="{% if listing['expired']: %}expired{% endif %}">
       <div class="value-displays" style="background-color:rgb{{listing['price_color'][0]}};color:rgb{{listing['price_color'][1]}}">
         Price<br>&pound{{listing['monthly_price']}}pcm
       </div>

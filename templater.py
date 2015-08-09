@@ -29,6 +29,14 @@ def get_color(listing, listings, f, cm):
 
     return background_color, text_color
 
+def add_colors(listings):
+    for listing in listings:
+        listing.update(
+            price_color=get_color(listing, listings, lambda l: int(l['price']), plt.cm.YlOrRd),
+            euston_color=get_color(listing, listings, lambda l: l['commutes']['Euston'], plt.cm.GnBu),
+            green_park_color=get_color(listing, listings, lambda l: l['commutes']['Green Park'], plt.cm.GnBu)
+        )
+
 def get_availabilities(listing):
     from_text = re.findall(AVAILABILITY_REGEX, listing['description'], flags=re.IGNORECASE)
     from_property_info = re.findall(AVAILABILITY_REGEX, listing['property_info'], flags=re.IGNORECASE)
@@ -57,32 +65,23 @@ def has_expired(listing, listings):
     return True if max(listing['store_times']) < latest_store_time else False
 
 def get_listings():
-    #TODO: Rewrite this Pythonically, with function for each modification
     listings = json.load(open('resources/listings.json', 'r')).values()
-    results = [l for l in listings if should_be_included(l)]
-    for listing in results:
-        extras = dict(
+    included_listings = [l for l in listings if should_be_included(l)]
+
+    for listing in included_listings:
+        listing.update(
             monthly_price=int(WEEKS_PER_MONTH*int(listing['price'])),
             availabilities=get_availabilities(listing),
             commutes=get_commutes(listing['station_name']),
             hashname=humanhash.humanize(listing['listing_id'], words=2),
-            expired=has_expired(listing, listings)
-        )
-        listing.update(extras)
-
-    for listing in results:
-        extras = dict(
+            expired=has_expired(listing, listings),
             printable_station_names=', '.join(listing['station_name']),
-            printable_availabilities=str.format('"{}"', '" or "'.join(listing['availabilities'])),
-            price_color=get_color(listing, results, lambda l: int(l['price']), plt.cm.YlOrRd),
-            euston_color=get_color(listing, results, lambda l: l['commutes']['Euston'], plt.cm.GnBu),
-            green_park_color=get_color(listing, results, lambda l: l['commutes']['Green Park'], plt.cm.GnBu),
+            printable_availabilities=str.format('"{}"', '" or "'.join(get_availabilities(listing)))
         )
-        listing.update(extras)
 
-    results = sorted(results, key=lambda r: r['last_published_date'], reverse=True)
+    add_colors(included_listings)
 
-    return results
+    return sorted(included_listings, key=lambda r: r['last_published_date'], reverse=True)
 
 def get_rendered_page():
     env = Environment(loader=FileSystemLoader('.'))
@@ -94,4 +93,4 @@ def generate_index():
     with open('index.html', 'w+') as f:
         f.write(get_rendered_page())
 
-generate_index()
+# generate_index()
