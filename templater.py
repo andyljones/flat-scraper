@@ -15,7 +15,7 @@ def get_listing_color(listing, listings):
     upper = sp.percentile(prices, 90)
 
     relative_price = (price - lower)/(upper - lower)
-    color = plt.cm.OrRd(relative_price)
+    color = plt.cm.YlOrRd(sp.clip(relative_price, 0, 1))
 
     return tuple([int(255*c) for c in color])
 
@@ -41,3 +41,5 @@ def get_rendered_page():
 def generate_index():
     with open('index.html', 'w+') as f:
         f.write(get_rendered_page())
+
+generate_index()
