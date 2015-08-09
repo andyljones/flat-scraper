@@ -1,14 +1,13 @@
 #photos {
   overflow-x: scroll;
   white-space:nowrap;
-  padding: 5px;
+  margin: 10px;
   float: left;
   clear: left;
   width: 99%
 }
 
 #details {
-  width: 400px;
   height: 80px;
   float: left
 }
@@ -16,13 +15,18 @@
 .value-displays {
   height: 100px;
   width: 100px;
-  border-width: 5px;
-  margin: 5px;
+  margin: 10px;
   float: left;
   display: flex;
   justify-content: center;
   align-items: center;
   text-align: center;
+}
+
+.value-display-sep {
+  width: 20px;
+  height: 100px;
+  float: left;
 }
 
 #listing {
