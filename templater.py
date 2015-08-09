@@ -4,6 +4,7 @@ import seaborn as sns
 import matplotlib.pyplot as plt
 import matplotlib as mpl
 import re
+import humanhash
 from jinja2 import Environment, FileSystemLoader
 
 WEEKS_PER_MONTH = 365/12./7
@@ -57,6 +58,7 @@ def get_listings():
             listing['monthly_price'] = int(WEEKS_PER_MONTH*int(listing['price']))
             listing['availabilities'] = get_availabilities(listing)
             listing['commutes'] = get_commutes(listing['station_name'])
+            listing['hashname'] = humanhash.humanize(listing['listing_id'], words=2)
             results.append(listing)
 
     for listing in results:
