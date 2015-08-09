@@ -32,12 +32,11 @@ def get_color(listing, listings, f, cm):
 def get_availabilities(listing):
     from_text = re.findall(AVAILABILITY_REGEX, listing['description'], flags=re.IGNORECASE)
     from_property_info = re.findall(AVAILABILITY_REGEX, listing['property_info'], flags=re.IGNORECASE)
-
     return from_text + from_property_info
 
 def is_available_in_sept(listing):
     availabilities = get_availabilities(listing)
-    matches = re.findall('sep|\.09\.|\.9\.|/09/|/9/', a, flags=re.IGNORECASE) for a in availabilities
+    matches = (re.findall('sep|\.09\.|\.9\.|/09/|/9/', a, flags=re.IGNORECASE) for a in availabilities)
     return True if any(matches) else False
 
 def should_be_included(listing):
@@ -95,4 +94,4 @@ def generate_index():
     with open('index.html', 'w+') as f:
         f.write(get_rendered_page())
 
-# generate_index()
+generate_index()
