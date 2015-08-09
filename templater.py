@@ -66,7 +66,7 @@ def get_listings():
 
     for listing in results:
         listing['printable_station_names'] = ', '.join(listing['station_name'])
-        listing['printable_availabilities'] = str.format('"{}"', '" or "'.join(listing['availabilities'])) 
+        listing['printable_availabilities'] = str.format('"{}"', '" or "'.join(listing['availabilities']))
         listing['price_color'] = get_color(listing, results, lambda l: int(l['price']), plt.cm.YlOrRd)
         listing['euston_color'] = get_color(listing, results, lambda l: l['commutes']['Euston'], plt.cm.GnBu)
         listing['green_park_color'] = get_color(listing, results, lambda l: l['commutes']['Green Park'], plt.cm.GnBu)
