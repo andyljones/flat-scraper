@@ -20,7 +20,10 @@ def save_photo(photo_url, filename):
     if not os.path.exists('photos'):
         os.mkdir('photos')
 
-    photo.save(os.path.join('photos', filename))
+    try:
+        photo.save(os.path.join('photos', filename))
+    except Exception as e:
+        print(str.format('Failed to save photo at {} with filename {}. Exception: {}', photo_url, filename, e))
 
 def save_photos(page_text, listing_id):
     photo_urls = get_photo_urls(page_text)

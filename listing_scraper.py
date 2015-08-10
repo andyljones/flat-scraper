@@ -117,10 +117,16 @@ def store_listing(station_name, start_time, listing):
     else:
         print(str.format('No change in listing #{}', listing_id))
         stored_listing['station_name'] = list(set(stored_listing['station_name']).union([station_name]))
-        stored_listing['store_times'] = list(set(stored_listing['store_times']).union([start_time]))
+        stored_listing['store_times'] = list(set(stored_listing['store_times']).union([str(start_time)]))
 
     store[listing_id] = stored_listing
-    json.dump(store, open(STORE_PATH, 'r+'))
+
+    backup = json.load(open(STORE_PATH, 'r'))
+    try:
+        json.dump(store, open(STORE_PATH, 'r+'))
+    except Exception as e:
+        print(str.format('Could not save the updated store. Returning to backup. Exception {}', e))
+        json.dump(backup, open(STORE_PATH, 'r+'))
 
 def scrape_listings_and_images():
     time =  datetime.datetime.now()
@@ -129,5 +135,5 @@ def scrape_listings_and_images():
         for listing in listings:
             store_listing(station_name, time, listing)
 
-# sys.stdout = os.fdopen(sys.stdout.fileno(), 'w', 1)
-# scrape_listings_and_images()
+sys.stdout = os.fdopen(sys.stdout.fileno(), 'w', 1)
+scrape_listings_and_images()
