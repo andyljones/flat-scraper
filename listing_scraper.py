@@ -1,10 +1,10 @@
 import zoopla
 import json
 import os
-import sys
 import datetime
 import time
 import requests
+import logging
 
 from image_scraper import save_photos
 from bs4 import BeautifulSoup
@@ -93,8 +93,8 @@ def create_storable_listing(station_name, start_time, listing):
 
 def update_storable_listing(station_name, start_time, stored_listing, listing):
     storable_listing = create_storable_listing(station_name, start_time, listing)
-    storable_listing['store_times'] += stored_listing['store_times']
-    storable_listing['station_name'] += stored_listing['station_name']
+    storable_listing['station_name'] = list(set(stored_listing['station_name']).union(stored_listing['station_name']))
+    storable_listing['store_times'] = list(set(stored_listing['store_times']).union(stored_listing['store_times']))
 
     return storable_listing
 
@@ -107,28 +107,33 @@ def store_listing(station_name, start_time, listing):
     stored_listing = store.get(listing_id)
 
     if not stored_listing:
-        print(str.format('Storing listing #{}', listing_id))
+        logging.info(str.format('Storing listing #{}', listing_id))
         stored_listing = create_storable_listing(station_name, start_time, listing)
         time.sleep(REQUEST_DELAY)
     elif (listing.last_published_date > stored_listing['last_published_date']):
-        print(str.format('Updating listing #{}', listing_id))
+        logging.info(str.format('Updating listing #{}', listing_id))
         stored_listing = update_storable_listing(station_name, start_time, stored_listing, listing)
         time.sleep(REQUEST_DELAY)
     else:
-        print(str.format('Listing #{} has not been updated since last time it was stored', listing_id))
-
-    if (station_name not in stored_listing['station_name']):
+        logging.info(str.format('No change in listing #{}', listing_id))
         stored_listing['station_name'] = list(set(stored_listing['station_name']).union([station_name]))
+        stored_listing['store_times'] = list(set(stored_listing['store_times']).union([str(start_time)]))
 
     store[listing_id] = stored_listing
-    json.dump(store, open(STORE_PATH, 'r+'))
+
+    backup = json.load(open(STORE_PATH, 'r'))
+    try:
+        json.dump(store, open(STORE_PATH, 'r+'))
+    except Exception as e:
+        logging.warning(str.format('Could not save the updated store. Returning to backup. Exception {}', e))
+        json.dump(backup, open(STORE_PATH, 'r+'))
 
 def scrape_listings_and_images():
     time =  datetime.datetime.now()
     for i, (station_name, listings) in enumerate(scrape_listings()):
-        print(str.format('{} listings to store for station {}, {}', len(listings), i+1, station_name))
+        logging.info(str.format('{} listings to store for station {}, {}', len(listings), i+1, station_name))
         for listing in listings:
             store_listing(station_name, time, listing)
 
-# sys.stdout = os.fdopen(sys.stdout.fileno(), 'w', 1)
-# scrape_listings_and_images()
+import interactive_console_options
+scrape_listings_and_images()
