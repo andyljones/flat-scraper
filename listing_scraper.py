@@ -135,5 +135,5 @@ def scrape_listings_and_images():
         for listing in listings:
             store_listing(station_name, time, listing)
 
-import interactive_console_options
-scrape_listings_and_images()
+# import interactive_console_options
+# scrape_listings_and_images()
