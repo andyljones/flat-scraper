@@ -61,8 +61,12 @@ def get_commutes(station_names):
         }
 
 def has_expired(listing, listings):
-    latest_store_time = max(chain(*[l['store_times'] for l in listings]))
-    return True if max(listing['store_times']) < latest_store_time else False
+    last_scrape_time = max(chain(*[l['store_times'] for l in listings]))
+    last_store_time = max(listing['store_times'])
+
+    listing_removed =  last_store_time < last_scrape_time
+    unrentable = listing['status'] != 'to_rent'
+    return listing_removed or unrentable
 
 def get_listings():
     listings = json.load(open('resources/listings.json', 'r')).values()
