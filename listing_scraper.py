@@ -93,7 +93,7 @@ def create_storable_listing(station_name, start_time, listing):
 
 def update_storable_listing(station_name, start_time, stored_listing, listing):
     storable_listing = create_storable_listing(station_name, start_time, listing)
-    storable_listing['store_times'] += stored_listing['time']
+    storable_listing['store_times'] += stored_listing['store_times']
     storable_listing['station_name'] += stored_listing['station_name']
 
     return storable_listing
@@ -110,7 +110,7 @@ def store_listing(station_name, start_time, listing):
         print(str.format('Storing listing #{}', listing_id))
         stored_listing = create_storable_listing(station_name, start_time, listing)
         time.sleep(REQUEST_DELAY)
-    elif (listing.last_published_date < store[listing_id]['last_published_date']):
+    elif (listing.last_published_date > stored_listing['last_published_date']):
         print(str.format('Updating listing #{}', listing_id))
         stored_listing = update_storable_listing(station_name, start_time, stored_listing, listing)
         time.sleep(REQUEST_DELAY)
@@ -130,5 +130,5 @@ def scrape_listings_and_images():
         for listing in listings:
             store_listing(station_name, time, listing)
 
-sys.stdout = os.fdopen(sys.stdout.fileno(), 'w', 1)
-scrape_listings_and_images()
+# sys.stdout = os.fdopen(sys.stdout.fileno(), 'w', 1)
+# scrape_listings_and_images()
