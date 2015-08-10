@@ -61,7 +61,7 @@ def get_commutes(station_names):
         }
 
 def has_expired(listing, listings):
-    latest_store_time = max(chain(l['store_times'] for l in listings))
+    latest_store_time = max(chain(*[l['store_times'] for l in listings]))
     return True if max(listing['store_times']) < latest_store_time else False
 
 def get_listings():

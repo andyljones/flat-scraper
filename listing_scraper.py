@@ -93,8 +93,8 @@ def create_storable_listing(station_name, start_time, listing):
 
 def update_storable_listing(station_name, start_time, stored_listing, listing):
     storable_listing = create_storable_listing(station_name, start_time, listing)
-    storable_listing['store_times'] += stored_listing['store_times']
-    storable_listing['station_name'] += stored_listing['station_name']
+    storable_listing['station_name'] = list(set(stored_listing['station_name']).union(stored_listing['station_name']))
+    storable_listing['store_times'] = list(set(stored_listing['store_times']).union(stored_listing['store_times']))
 
     return storable_listing
 
@@ -115,10 +115,9 @@ def store_listing(station_name, start_time, listing):
         stored_listing = update_storable_listing(station_name, start_time, stored_listing, listing)
         time.sleep(REQUEST_DELAY)
     else:
-        print(str.format('Listing #{} has not been updated since last time it was stored', listing_id))
-
-    if (station_name not in stored_listing['station_name']):
+        print(str.format('No change in listing #{}', listing_id))
         stored_listing['station_name'] = list(set(stored_listing['station_name']).union([station_name]))
+        stored_listing['store_times'] = list(set(stored_listing['store_times']).union([start_time]))
 
     store[listing_id] = stored_listing
     json.dump(store, open(STORE_PATH, 'r+'))
