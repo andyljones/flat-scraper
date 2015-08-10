@@ -124,10 +124,10 @@ def store_listing(station_name, start_time, listing):
 
     backup = json.load(open(STORE_PATH, 'r'))
     try:
-        json.dump(store, open(STORE_PATH, 'r+'))
+        json.dump(store, open(STORE_PATH, 'w'))
     except Exception as e:
         logging.warning(str.format('Could not save the updated store. Returning to backup. Exception {}', e))
-        json.dump(backup, open(STORE_PATH, 'r+'))
+        json.dump(backup, open(STORE_PATH, 'w'))
 
 def scrape_listings_and_images():
     time =  datetime.datetime.now()
@@ -136,5 +136,5 @@ def scrape_listings_and_images():
         for listing in listings:
             store_listing(station_name, time, listing)
 
-# import interactive_console_options
-# scrape_listings_and_images()
+import interactive_console_options
+scrape_listings_and_images()
