@@ -97,4 +97,5 @@ def generate_index():
     with open('index.html', 'w+') as f:
         f.write(get_rendered_page())
 
+# import interactive_console_options
 # generate_index()

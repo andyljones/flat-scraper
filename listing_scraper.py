@@ -1,10 +1,10 @@
 import zoopla
 import json
 import os
-import sys
 import datetime
 import time
 import requests
+import logging
 
 from image_scraper import save_photos
 from bs4 import BeautifulSoup
@@ -107,15 +107,15 @@ def store_listing(station_name, start_time, listing):
     stored_listing = store.get(listing_id)
 
     if not stored_listing:
-        print(str.format('Storing listing #{}', listing_id))
+        logging.info(str.format('Storing listing #{}', listing_id))
         stored_listing = create_storable_listing(station_name, start_time, listing)
         time.sleep(REQUEST_DELAY)
     elif (listing.last_published_date > stored_listing['last_published_date']):
-        print(str.format('Updating listing #{}', listing_id))
+        logging.info(str.format('Updating listing #{}', listing_id))
         stored_listing = update_storable_listing(station_name, start_time, stored_listing, listing)
         time.sleep(REQUEST_DELAY)
     else:
-        print(str.format('No change in listing #{}', listing_id))
+        logging.info(str.format('No change in listing #{}', listing_id))
         stored_listing['station_name'] = list(set(stored_listing['station_name']).union([station_name]))
         stored_listing['store_times'] = list(set(stored_listing['store_times']).union([str(start_time)]))
 
@@ -125,15 +125,15 @@ def store_listing(station_name, start_time, listing):
     try:
         json.dump(store, open(STORE_PATH, 'r+'))
     except Exception as e:
-        print(str.format('Could not save the updated store. Returning to backup. Exception {}', e))
+        logging.warning(str.format('Could not save the updated store. Returning to backup. Exception {}', e))
         json.dump(backup, open(STORE_PATH, 'r+'))
 
 def scrape_listings_and_images():
     time =  datetime.datetime.now()
     for i, (station_name, listings) in enumerate(scrape_listings()):
-        print(str.format('{} listings to store for station {}, {}', len(listings), i+1, station_name))
+        logging.info(str.format('{} listings to store for station {}, {}', len(listings), i+1, station_name))
         for listing in listings:
             store_listing(station_name, time, listing)
 
-sys.stdout = os.fdopen(sys.stdout.fileno(), 'w', 1)
+import interactive_console_options
 scrape_listings_and_images()
