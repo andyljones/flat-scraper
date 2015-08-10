@@ -9,7 +9,7 @@ def update_website():
     repo = Repo('.')
     current_branch = repo.active_branch
 
-    print('Scraping listings...')
+    logging.info('Scraping listings...')
     scrape_listings_and_images()
 
     try:

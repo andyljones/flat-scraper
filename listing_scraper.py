@@ -23,11 +23,12 @@ FIELDS_TO_STORE = [
     'agent_phone']
 
 REQUEST_DELAY = 1#seconds
+CACHE_LENGTH = 3*60*60#seconds
 STORE_PATH = 'resources/listings.json'
 
 def get_api():
     key = json.load(open('resources/zoopla_key.json', 'r'))
-    return zoopla.api(version=1, api_key=key)
+    return zoopla.api(version=1, api_key=key, cache_seconds=CACHE_LENGTH)
 
 def get_coords(station_name):
     coords = json.load(open('resources/station_coords.json', 'r'))
