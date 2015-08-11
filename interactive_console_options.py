@@ -3,4 +3,5 @@ import sys
 import logging
 
 sys.stdout = os.fdopen(sys.stdout.fileno(), 'w', 1)
-logging.getLogger().setLevel(20)
+logging.getLogger().setLevel(logging.INFO)
+logging.getLogger('requests').setLevel(logging.WARNING)
