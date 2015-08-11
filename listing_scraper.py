@@ -116,7 +116,7 @@ def store_listing(station_name, start_time, listing):
         stored_listing = update_storable_listing(station_name, start_time, stored_listing, listing)
         time.sleep(REQUEST_DELAY)
     else:
-        logging.info(str.format('No change in listing #{}', listing_id))
+        logging.debug(str.format('No change in listing #{}', listing_id))
         stored_listing['station_name'] = list(set(stored_listing['station_name']).union([station_name]))
         stored_listing['store_times'] = list(set(stored_listing['store_times']).union([str(start_time)]))
 
