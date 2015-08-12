@@ -7,6 +7,7 @@ import re
 import humanhash
 from jinja2 import Environment, FileSystemLoader
 from itertools import chain
+from dateutil.parser import parse
 
 WEEKS_PER_MONTH = 365/12./7
 
@@ -87,15 +88,23 @@ def get_listings():
 
     return sorted(included_listings, key=lambda r: r['last_published_date'], reverse=True)
 
+def get_summary(listings):
+    return dict(
+        last_scrape_time=parse(max(chain(*[l['store_times'] for l in listings]))).strftime('%H:%M on %A'),
+        number_of_listings=len(listings),
+        number_unexpired=len([l for l in listings if not l['expired']])
+    )
+
 def get_rendered_page():
     env = Environment(loader=FileSystemLoader('.'))
     template = env.get_template('index_template.html')
-    rendered = template.render(listings=get_listings())
+    listings = get_listings()
+    rendered = template.render(listings=listings, summary=get_summary(listings))
     return rendered
 
 def generate_index():
     with open('index.html', 'w+') as f:
         f.write(get_rendered_page())
 
-# import interactive_console_options
-# generate_index()
+import interactive_console_options
+generate_index()
