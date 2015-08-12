@@ -4,6 +4,12 @@
     <link rel="stylesheet" type="text/css" href="index.css">
   </head>
   <body>
+    <div id="listing">
+      <ul>
+        <li>Last scrape was at {{summary['last_scrape_time']}}.</li>
+        <li>{{summary['number_of_listings']}} listings have been found, of which {{summary['number_unexpired']}} are still available.</li>
+      </ul>
+    </div>
     {% for listing in listings %}
     <div id="listing" class="{% if listing['expired'] %}expired{% endif %}">
       <div class="value-displays" style="background-color:rgb{{listing['price_color'][0]}};color:rgb{{listing['price_color'][1]}}">
