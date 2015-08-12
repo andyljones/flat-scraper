@@ -125,7 +125,8 @@ def get_summary(listings):
     return dict(
         last_scrape_time=parse(max(chain(*[l['store_times'] for l in listings]))).strftime('%H:%M on %A'),
         number_of_listings=len(listings),
-        number_unexpired=len([l for l in listings if not l['expired']])
+        number_unexpired=len([l for l in listings if not l['expired']]),
+        search_options=get_search_options()
     )
 
 def get_rendered_page():
