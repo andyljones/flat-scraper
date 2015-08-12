@@ -20,7 +20,9 @@ FIELDS_TO_STORE = [
     'first_published_date',
     'last_published_date',
     'agent_name',
-    'agent_phone']
+    'agent_phone',
+    'latitude',
+    'longitude']
 
 REQUEST_DELAY = 1#seconds
 CACHE_LENGTH = 3*60*60#seconds
@@ -40,6 +42,9 @@ def get_coords(station_name):
     if long_station_name in coords:
         return coords[long_station_name]
 
+def get_search_options():
+    return json.load(open('resources/search_options.json', 'r'))
+
 def get_search_params():
     params = dict(
         order_by='age',
@@ -48,7 +53,7 @@ def get_search_params():
         furnished='furnished',
         description_style=1)
 
-    options = json.load(open('resources/search_options.json', 'r'))
+    options = get_search_options()
     params['radius'] = options['radius']
     params['minimum_beds'] = options['beds']
     params['maximum_beds'] = options['beds']
@@ -94,8 +99,8 @@ def create_storable_listing(station_name, start_time, listing):
 
 def update_storable_listing(station_name, start_time, stored_listing, listing):
     storable_listing = create_storable_listing(station_name, start_time, listing)
-    storable_listing['station_name'] = list(set(stored_listing['station_name']).union(stored_listing['station_name']))
-    storable_listing['store_times'] = list(set(stored_listing['store_times']).union(stored_listing['store_times']))
+    storable_listing['station_name'] = list(set(stored_listing['station_name']).union(storable_listing['station_name']))
+    storable_listing['store_times'] = list(set(stored_listing['store_times']).union(storable_listing['store_times']))
 
     return storable_listing
 
