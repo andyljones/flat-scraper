@@ -8,8 +8,16 @@ import humanhash
 from jinja2 import Environment, FileSystemLoader
 from itertools import chain
 from dateutil.parser import parse
+from listing_scraper import get_coords, get_search_options
 
 WEEKS_PER_MONTH = 365/12./7
+EARTH_CIRCUMFERENCE = 40075
+KM_PER_MILE = 1.609
+MEAN_RADIUS_OF_POINT_IN_UNIT_DISC = 2./3.
+WALKING_SPEED = 5./60.#km per minute
+MAX_DISTANCE_FROM_STATION_IN_KM = KM_PER_MILE*get_search_options()['radius']
+MAX_DISTANCE_FROM_STATION_IN_MINS = int(MEAN_RADIUS_OF_POINT_IN_UNIT_DISC*MAX_DISTANCE_FROM_STATION_IN_KM/WALKING_SPEED)
+
 
 DATE_REGEX = '(?:aug|august|sep|sept|september|oct|october|now|immediately|\d+/\d+|\d+.\d+)'
 AVAILABILITY_REGEX = 'available.{,20}' + DATE_REGEX
@@ -51,14 +59,39 @@ def is_available_in_sept(listing):
 def should_be_included(listing):
     return True if listing['photo_filenames'] and is_available_in_sept(listing) else False
 
-def get_commutes(station_names):
+def distance_from_station(lat, lon, station_name):
+    station_lat, station_lon = get_coords(station_name)
+
+    change_in_lat = EARTH_CIRCUMFERENCE*(lat - station_lat)/360
+
+    average_lat = (lat + station_lat)/2
+    circumference_at_lat = EARTH_CIRCUMFERENCE*sp.cos(sp.pi/180*average_lat)
+    change_in_lon = circumference_at_lat*(lon - station_lon)/360
+
+    distance_in_km = sp.sqrt(change_in_lat**2 + change_in_lon**2)
+    distance_in_minutes = distance_in_km/WALKING_SPEED
+
+    return int(sp.ceil(distance_in_minutes))
+
+
+def distances_from_stations(listing):
+    if 'latitude' in listing and 'longitude' in listing:
+        lat, lon = listing['latitude'], listing['longitude']
+        return {name: distance_from_station(lat, lon, name) for name in listing['station_name']}
+    else:
+        return {name: MAX_DISTANCE_FROM_STATION_IN_MINS for name in listing['station_name']}
+
+def get_commutes(listing):
+    station_names = listing['station_name']
     commutes = json.load(open('resources/commute_lengths.json', 'r'))
     euston_commutes = commutes['Euston Underground Station']
     green_park_commutes = commutes['Green Park Underground Station']
 
+    distances = distances_from_stations(listing)
+
     return {
-        'Euston': min(int(euston_commutes[name + ' Underground Station']) for name in station_names),
-        'Green Park': min(int(green_park_commutes[name + ' Underground Station']) for name in station_names)
+        'Euston': min(int(euston_commutes[name + ' Underground Station']) + distances[name] for name in station_names),
+        'Green Park': min(int(green_park_commutes[name + ' Underground Station']) + distances[name] for name in station_names)
         }
 
 def has_expired(listing, listings):
@@ -77,7 +110,7 @@ def get_listings():
         listing.update(
             monthly_price=int(WEEKS_PER_MONTH*int(listing['price'])),
             availabilities=get_availabilities(listing),
-            commutes=get_commutes(listing['station_name']),
+            commutes=get_commutes(listing),
             hashname=humanhash.humanize(listing['listing_id'], words=2),
             expired=has_expired(listing, listings),
             printable_station_names=', '.join(listing['station_name']),
@@ -106,5 +139,5 @@ def generate_index():
     with open('index.html', 'w+') as f:
         f.write(get_rendered_page())
 
-import interactive_console_options
-generate_index()
+# import interactive_console_options
+# generate_index()
