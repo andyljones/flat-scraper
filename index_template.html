@@ -8,6 +8,7 @@
       <ul>
         <li>Last scrape was at {{summary['last_scrape_time']}}.</li>
         <li>{{summary['number_of_listings']}} listings have been found, of which {{summary['number_unexpired']}} are still available.</li>
+        <li>Listing {{summary['search_options']['beds']}}-bed properties below &pound{{summary['search_options']['max_price']}}pcm. Each is within {{summary['search_options']['radius']}} miles of a station that is less than 20 minutes from both Euston and Green Park.</li>
       </ul>
     </div>
     {% for listing in listings %}
