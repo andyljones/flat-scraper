@@ -25,7 +25,7 @@ FIELDS_TO_STORE = [
     'longitude']
 
 REQUEST_DELAY = 1#seconds
-CACHE_LENGTH = 3*60*60#seconds
+CACHE_LENGTH = 60*60#seconds
 STORE_PATH = 'resources/listings.json'
 
 def get_api():
