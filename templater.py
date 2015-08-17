@@ -6,6 +6,7 @@ from itertools import chain
 from dateutil.parser import parse
 from listing_scraper import get_search_options
 from listing_transformer import get_listings
+from mapper import make_map
 
 def get_color(listing, listings, f, cm):
     price = f(listing)
@@ -45,6 +46,7 @@ def get_rendered_page():
     template = env.get_template('index_template.html')
     listings = get_listings()
     add_colors(listings)
+    make_map(listings, 'map.png')
     rendered = template.render(listings=listings, summary=get_summary(listings))
     return rendered
 

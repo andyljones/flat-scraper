@@ -3,3 +3,5 @@ photos/
 *.pyc
 index.html
 *.sqlite
+*.txt
+*.png
