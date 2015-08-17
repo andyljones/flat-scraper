@@ -29,18 +29,22 @@ def get_map(listings):
     data = StringIO(requests.get(url).content)
     return Image.open(data), labels
 
-def show_map(listings):
+def make_map(listings):
     sns.set_style('white')
+    fig, ax = plt.subplots()
     im, labels = get_map(get_listings())
-    plt.imshow(im)
-    plt.gcf().set_size_inches(10, 10)
-    plt.gca().set_xticks([])
-    plt.gca().set_yticks([])
+    ax.imshow(im)
+    ax.set_xticks([])
+    ax.set_yticks([])
 
     for i, (label, name) in enumerate(labels.items()):
         x = im.size[0] - 150
         y = 20 + i*20
-        plt.text(x, y, str.format('{}: {}', label, name), fontsize=12)
+        ax.text(x, y, str.format('{}: {}', label, name), fontsize=12)
+
+    figure.set_size_inches(10, 10)
+    return ax
+
 
 def pairwise_distances(listings):
     coords = positions(listings)
@@ -65,6 +69,7 @@ def shortest_path(listings):
     times_of_best = [distances.at[s, t] for s, t in zip(best, best[1:])]
     return best, times_of_best, best_time
 
+# %matplotlib inline
 # listings = get_listings()
 # print(shortest_path(listings))
-# show_map(listings())
+# make_map(listings)
