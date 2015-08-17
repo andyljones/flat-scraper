@@ -59,20 +59,21 @@ def is_available_in_sept(listing):
 def should_be_included(listing):
     return True if listing['photo_filenames'] and is_available_in_sept(listing) else False
 
-def distance_from_station(lat, lon, station_name):
-    station_lat, station_lon = get_coords(station_name)
+def walking_distance(lat_1, lon_1, lat_2, lon_2):
+    change_in_lat = EARTH_CIRCUMFERENCE*(lat_1 - lat_2)/360
 
-    change_in_lat = EARTH_CIRCUMFERENCE*(lat - station_lat)/360
-
-    average_lat = (lat + station_lat)/2
+    average_lat = (lat_1 + lat_2)/2
     circumference_at_lat = EARTH_CIRCUMFERENCE*sp.cos(sp.pi/180*average_lat)
-    change_in_lon = circumference_at_lat*(lon - station_lon)/360
+    change_in_lon = circumference_at_lat*(lon_1 - lon_2)/360
 
     distance_in_km = sp.sqrt(change_in_lat**2 + change_in_lon**2)
     distance_in_minutes = distance_in_km/WALKING_SPEED
 
     return int(sp.ceil(distance_in_minutes))
 
+def distance_from_station(lat, lon, station_name):
+    station_lat, station_lon = get_coords(station_name)
+    return walking_distance(lat, lon, station_lat, station_lon)
 
 def distances_from_stations(listing):
     if 'latitude' in listing and 'longitude' in listing:
@@ -157,5 +158,5 @@ def generate_index():
     with open('index.html', 'w+') as f:
         f.write(get_rendered_page())
 
-import interactive_console_options
-generate_index()
+# import interactive_console_options
+# generate_index()
