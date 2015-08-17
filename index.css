@@ -42,7 +42,11 @@
   opacity: 0.3
 }
 
-.expired #photos {
+.ignored {
+  opacity: 0.5
+}
+
+.expired #photos, .ignored #photos {
   display: none
 }
 

@@ -94,6 +94,13 @@ def get_commutes(listing):
         'Green Park': min(int(green_park_commutes[name + ' Underground Station']) + distances[name] for name in station_names)
         }
 
+def get_humanhash(listing):
+    return humanhash.humanize(listing['listing_id'], words=2)
+
+def is_ignored(listing):
+    ignores = json.load(open('resources/ignores.json'))
+    return ignores.get(get_humanhash(listing), '')
+
 def has_expired(listing, listings):
     last_scrape_time = max(chain(*[l['store_times'] for l in listings]))
     last_store_time = max(listing['store_times'])
@@ -101,6 +108,14 @@ def has_expired(listing, listings):
     listing_removed =  last_store_time < last_scrape_time
     unrentable = listing['status'] != 'to_rent'
     return listing_removed or unrentable
+
+def sort_listings(listings):
+    def key(l):
+        ignored = l['expired'] or l['ignored']
+        date = l['last_published_date']
+        return (not ignored, date)
+
+    return sorted(listings, key=key, reverse=True)
 
 def get_listings():
     listings = json.load(open('resources/listings.json', 'r')).values()
@@ -111,21 +126,23 @@ def get_listings():
             monthly_price=int(WEEKS_PER_MONTH*int(listing['price'])),
             availabilities=get_availabilities(listing),
             commutes=get_commutes(listing),
-            hashname=humanhash.humanize(listing['listing_id'], words=2),
+            hashname=get_humanhash(listing),
             expired=has_expired(listing, listings),
+            ignored=is_ignored(listing),
             printable_station_names=', '.join(listing['station_name']),
             printable_availabilities=str.format('"{}"', '" or "'.join(get_availabilities(listing)))
         )
 
     add_colors(included_listings)
 
-    return sorted(included_listings, key=lambda r: r['last_published_date'], reverse=True)
+    return sort_listings(included_listings)
 
 def get_summary(listings):
     return dict(
         last_scrape_time=parse(max(chain(*[l['store_times'] for l in listings]))).strftime('%H:%M on %A'),
         number_of_listings=len(listings),
         number_unexpired=len([l for l in listings if not l['expired']]),
+        number_of_interest=len([l for l in listings if not (l['expired'] or l['ignored'])]),
         search_options=get_search_options()
     )
 
@@ -140,5 +157,5 @@ def generate_index():
     with open('index.html', 'w+') as f:
         f.write(get_rendered_page())
 
-# import interactive_console_options
-# generate_index()
+import interactive_console_options
+generate_index()

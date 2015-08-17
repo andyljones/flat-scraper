@@ -7,12 +7,12 @@
     <div id="listing">
       <ul>
         <li>Last scrape was at {{summary['last_scrape_time']}}.</li>
-        <li>{{summary['number_of_listings']}} listings have been found, of which {{summary['number_unexpired']}} are still available.</li>
+        <li>{{summary['number_of_listings']}} listings have been found, of which {{summary['number_unexpired']}} are still available and {{summary['number_of_interest']}} are of interest.</li>
         <li>Listing {{summary['search_options']['beds']}}-bed properties below &pound{{summary['search_options']['max_price']}}pcm. Each is within {{summary['search_options']['radius']}} miles of a station that is less than 20 minutes from both Euston and Green Park.</li>
       </ul>
     </div>
     {% for listing in listings %}
-    <div id="listing" class="{% if listing['expired'] %}expired{% endif %}">
+    <div id="listing" class="{% if listing['expired'] %}expired{% endif %} {% if listing['ignored'] %}ignored{% endif %}">
       <div class="value-displays" style="background-color:rgb{{listing['price_color'][0]}};color:rgb{{listing['price_color'][1]}}">
         Price<br>&pound{{listing['monthly_price']}}pcm
       </div>
@@ -29,6 +29,7 @@
         <li>{{listing['printable_availabilities']}}</li>
         <li>Last updated: {{listing['last_published_date']}}</li>
         <li><a href="{{listing['details_url']}}">Details</a>
+        {% if listing['ignored'] %}<li>Ignored because "{{listing['ignored']}}"</li>{% endif %}
       </ul>
       <div id="photos">
       {% for filename in listing['photo_filenames'] %}
