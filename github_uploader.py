@@ -18,7 +18,7 @@ def update_website():
         generate_index()
 
         logging.info('Adding to branch gh-pages...')
-        repo.index.add(['index.html', 'index.css', 'photos'], force=True)
+        repo.index.add(['index.html', 'index.css', 'photos', 'map.png'], force=True)
         repo.index.commit(str.format('Updated at {}', str(datetime.datetime.now())))
 
         logging.info('Pushing...')
