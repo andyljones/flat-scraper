@@ -7,7 +7,7 @@ from collections import OrderedDict
 from itertools import product, permutations
 from PIL import Image
 from StringIO import StringIO
-from templater import get_listings, walking_distance
+from listing_transformer import get_listings, walking_distance
 from motionless import DecoratedMap, LatLonMarker
 
 def positions(listings):
@@ -42,7 +42,7 @@ def make_map(listings):
         y = 20 + i*20
         ax.text(x, y, str.format('{}: {}', label, name), fontsize=12)
 
-    figure.set_size_inches(10, 10)
+    fig.set_size_inches(10, 10)
     return ax
 
 
@@ -70,6 +70,6 @@ def shortest_path(listings):
     return best, times_of_best, best_time
 
 # %matplotlib inline
-# listings = get_listings()
+listings = get_listings()
 # print(shortest_path(listings))
-# make_map(listings)
+make_map(listings)
