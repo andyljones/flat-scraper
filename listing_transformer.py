@@ -55,14 +55,14 @@ def distances_from_stations(listing):
 def get_commutes(listing):
     station_names = listing['station_name']
     commutes = json.load(open('resources/commute_lengths.json', 'r'))
-    euston_commutes = commutes['Euston Underground Station']
-    green_park_commutes = commutes['Green Park Underground Station']
+    a_commutes = commutes['Aldgate Underground Station']
+    ae_commutes = commutes['Aldgate East Underground Station']
 
     distances = distances_from_stations(listing)
 
     return {
-        'Euston': min(int(euston_commutes[name + ' Underground Station']) + distances[name] for name in station_names),
-        'Green Park': min(int(green_park_commutes[name + ' Underground Station']) + distances[name] for name in station_names)
+        'Aldgate': min(int(a_commutes[name + ' Underground Station']) + distances[name] for name in station_names),
+        'Aldgate East': min(int(ae_commutes[name + ' Underground Station']) + distances[name] for name in station_names)
         }
 
 def get_humanhash(listing):
