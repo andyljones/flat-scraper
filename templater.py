@@ -28,8 +28,8 @@ def add_colors(listings):
     for listing in listings:
         listing.update(
             price_color=get_color(listing, listings, lambda l: int(l['price']), plt.cm.YlOrRd),
-            euston_color=get_color(listing, listings, lambda l: l['commutes']['Euston'], plt.cm.GnBu),
-            green_park_color=get_color(listing, listings, lambda l: l['commutes']['Green Park'], plt.cm.GnBu)
+            a_color=get_color(listing, listings, lambda l: l['commutes']['Aldgate'], plt.cm.GnBu),
+            ae_color=get_color(listing, listings, lambda l: l['commutes']['Aldgate East'], plt.cm.GnBu)
         )
 
 def get_summary(listings):
